@@ -1,0 +1,45 @@
+version: '2'
+
+services:
+  spark-master:
+    build: './spark_install'
+    volumes:
+      - ./sparkapps:/opt/spark/app
+    container_name: spark-master
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SNOWFLAKE_USER=${SNOWFLAKE_USER:-user}
+      - SNOWFLAKE_PASSWORD=${SNOWFLAKE_PASSWORD:-password}
+      - SNOWFLAKE_ACCOUNT=${SNOWFLAKE_ACCOUNT:-account}
+    ports:
+      - "8081:8080"
+      - "7077:7077"
+  spark-worker:
+    volumes:
+      - ./sparkapps:/opt/spark/app
+    build: './spark_install'
+    container_name: spark-worker
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_CORES=1
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SNOWFLAKE_USER=${SNOWFLAKE_USER:-user}
+      - SNOWFLAKE_PASSWORD=${SNOWFLAKE_PASSWORD:-password}
+      - SNOWFLAKE_ACCOUNT=${SNOWFLAKE_ACCOUNT:-account}
+    ports:
+      - "8082:8080"
+      - "7078:7077"
+    
+volumes:
+  spark_data:
+    driver: local
+
